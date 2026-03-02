@@ -1,0 +1,52 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  scrollbar-width: thin;
+}
+
+html, body, #__next {
+  min-height: 100vh;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes moonFloat {
+  0%, 100% { transform: translateY(0) rotate(-5deg); opacity: 0.7; }
+  50%       { transform: translateY(-8px) rotate(5deg); opacity: 1; }
+}
+
+@keyframes petalSway {
+  0%, 100% { opacity: 0.3; transform: rotate(-12deg); }
+  50%       { opacity: 0.65; transform: rotate(12deg); }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.05; }
+  50%       { opacity: 0.45; }
+}
+
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+
+.star {
+  position: fixed;
+  border-radius: 50%;
+  background: white;
+  pointer-events: none;
+  z-index: 0;
+  animation: twinkle var(--d, 3s) ease-in-out infinite var(--delay, 0s);
+}
+
+button {
+  transition: all 0.3s;
+}
+
+button:hover:not(:disabled) {
+  opacity: 0.85;
+}
