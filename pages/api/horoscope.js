@@ -66,7 +66,7 @@ export default async function handler(req, res) {
           generationConfig: {
             temperature: 0.9,
             maxOutputTokens: 2048,
-            // NOTE: NO responseMimeType here — causes 400/502 errors with Flash models
+            thinkingConfig: { thinkingBudget: 0 }, // disable thinking tokens — they break JSON parsing
           },
         }),
       }
@@ -84,22 +84,29 @@ export default async function handler(req, res) {
     const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
     if (!raw) {
-      console.error('Empty Gemini response body:', JSON.stringify(data).slice(0, 400));
-      return res.status(502).json({ error: 'Gemini returned empty content. Please try again.' });
+      console.error('Empty Gemini response body:', JSON.stringify(data).slice(0, 600));
+      return res.status(502).json({ error: 'Gemini returned empty content. Please try again.', debug: JSON.stringify(data).slice(0, 400) });
     }
 
-    // Extract JSON — strip markdown fences if present
-    const jsonStr = raw
-      .replace(/^[\s\S]*?(\{)/, '$1')   // drop any text before first {
-      .replace(/\}[\s\S]*$/, '}')        // drop any text after last }
-      .trim();
+    console.log('RAW GEMINI RESPONSE:', raw.slice(0, 500));
+
+    // Extract JSON — find first { and last } and take everything between
+    const firstBrace = raw.indexOf('{');
+    const lastBrace  = raw.lastIndexOf('}');
+
+    if (firstBrace === -1 || lastBrace === -1) {
+      console.error('No JSON braces found in response:', raw.slice(0, 400));
+      return res.status(502).json({ error: 'No JSON found in response. Please try again.', raw: raw.slice(0, 300) });
+    }
+
+    const jsonStr = raw.slice(firstBrace, lastBrace + 1);
 
     let parsed;
     try {
       parsed = JSON.parse(jsonStr);
     } catch (e) {
-      console.error('Parse failed. Raw start:', raw.slice(0, 300));
-      return res.status(502).json({ error: 'Response parsing failed. Please try again.' });
+      console.error('Parse failed:', e.message, '| Raw JSON attempt:', jsonStr.slice(0, 400));
+      return res.status(502).json({ error: `Parse error: ${e.message}`, raw: raw.slice(0, 400) });
     }
 
     return res.status(200).json(parsed);
