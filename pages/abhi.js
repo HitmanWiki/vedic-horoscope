@@ -2,7 +2,6 @@
 import Head from 'next/head';
 import Link from 'next/link';
 import { useState, useEffect, useCallback } from 'react';
-import { buildAbhiPrompt } from '../lib/prompts';
 import {
   Panel, ScoreCard, LuckyItem, ListItem, InfoStrip, TimeGuideCard
 } from '../components/HoroscopeUI';
@@ -53,7 +52,7 @@ export default function Abhi() {
       const res = await fetch('/api/horoscope', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: buildAbhiPrompt(dateStr, dayName) }),
+        body: JSON.stringify({ person: 'abhi', dateStr, dayName }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
